@@ -1,0 +1,17 @@
+domain: dana.io
+layout:
+- go.kubebuilder.io/v3
+plugins:
+  manifests.sdk.operatorframework.io/v2: {}
+  scorecard.sdk.operatorframework.io/v2: {}
+projectName: hostedcluster-requester
+repo: github.com/dana-team/hostedcluster-hostedcluster-requester
+resources:
+- domain: openshift.io
+  group: hypershift
+  kind: HostedCluster
+  version: v1alpha1
+  webhooks:
+    defaulting: true
+    webhookVersion: v1
+version: "3"
