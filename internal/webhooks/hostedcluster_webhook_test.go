@@ -21,6 +21,7 @@ import (
 
 	. "github.com/onsi/gomega"
 	hyp "github.com/openshift/hypershift/api/v1beta1"
+	"k8s.io/apimachinery/pkg/api/resource"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 
 	"github.com/dana-team/hostedcluster-requester/internal/constants"
@@ -37,6 +38,7 @@ func TestAnnotateHostedClusterRequester(t *testing.T) {
 	tests := []struct {
 		name        string
 		hcn         string
+		hcns        string
 		annotVal    string
 		expectedVal string
 		requester   string
@@ -44,12 +46,14 @@ func TestAnnotateHostedClusterRequester(t *testing.T) {
 		{
 			name:        "Set annotation on HostedCluster without annotation",
 			hcn:         "hc-1",
+			hcns:        "clusters",
 			expectedVal: "requester-1",
 			requester:   "requester-1",
 		},
 		{
 			name:        "No operation on HostedCluster with annotation",
 			hcn:         "hc-2",
+			hcns:        "clusters",
 			annotVal:    "requester-x",
 			expectedVal: "requester-x",
 			requester:   "requester-2",
@@ -62,8 +66,25 @@ func TestAnnotateHostedClusterRequester(t *testing.T) {
 
 			hcInst := &hyp.HostedCluster{}
 			hcInst.Name = tc.hcn
+			hcInst.Namespace = tc.hcns
 			if tc.annotVal != "" {
 				hcInst.SetAnnotations(map[string]string{constants.RequesterAnnotation: tc.annotVal})
+			}
+
+			// this is needed so that the tests don't fail on the webhook
+			// for trying to access an invalid memory address or nil pointer dereference
+			// TODO: Figure out a more elegant way to handle it
+			hcInst.Spec.Etcd = hyp.EtcdSpec{
+				ManagementType: "Managed",
+				Managed: &hyp.ManagedEtcdSpec{
+					Storage: hyp.ManagedEtcdStorageSpec{
+						Type: "PersistentVolume",
+						PersistentVolume: &hyp.PersistentVolumeEtcdStorageSpec{
+							Size: &resource.Quantity{},
+						},
+						RestoreSnapshotURL: []string{},
+					},
+				},
 			}
 
 			// test

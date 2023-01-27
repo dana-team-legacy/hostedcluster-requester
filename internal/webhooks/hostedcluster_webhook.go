@@ -78,7 +78,7 @@ func (hook *HostedClusterAnnotator) handleInner(log logr.Logger, hc *hyp.HostedC
 	// instead of empty slice and this causes an error for HostedCluster.
 	// This is the only instance of the HostedCluster spec that is like this so
 	// we only need to handle this here
-	// TODO: Figure out an elegant way to get past it
+	// TODO: Figure out a more elegant way to handle it
 	if hc.Spec.Etcd.Managed.Storage.RestoreSnapshotURL == nil {
 		hc.Spec.Etcd.Managed.Storage.RestoreSnapshotURL = []string{}
 	}
