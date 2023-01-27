@@ -20,7 +20,7 @@ import (
 	"testing"
 
 	. "github.com/onsi/gomega"
-	hyp "github.com/openshift/hypershift/api/v1alpha1"
+	hyp "github.com/openshift/hypershift/api/v1beta1"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 
 	"github.com/dana-team/hostedcluster-requester/internal/constants"

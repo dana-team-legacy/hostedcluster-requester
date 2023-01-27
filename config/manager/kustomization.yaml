@@ -1,2 +1,8 @@
 resources:
 - manager.yaml
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+images:
+- digest: sha256:0d5dc92b690bf0665573ae0dd05a8c5f40158aaf619fd01e8a00301b485935bc
+  name: controller
+  newName: quay.io/danateamorg/hostedcluster-requester

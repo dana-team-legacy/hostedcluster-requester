@@ -8,10 +8,7 @@ webhooks:
 - admissionReviewVersions:
   - v1
   clientConfig:
-    service:
-      name: webhook-service
-      namespace: system
-      path: /mutate-v1beta1-hostedcluster
+    url: https://$(HOST):9443/mutate-v1beta1-hostedcluster
   failurePolicy: Fail
   name: mhostedcluster.kb.io
   rules:

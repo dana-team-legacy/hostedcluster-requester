@@ -84,7 +84,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	hookServer.Register("/mutate-hosted-cluster", &webhook.Admission{
+	hookServer.Register("/mutate-v1beta1-hostedcluster", &webhook.Admission{
 		Handler: &webhooks.HostedClusterAnnotator{
 			Client:  mgr.GetClient(),
 			Decoder: decoder,

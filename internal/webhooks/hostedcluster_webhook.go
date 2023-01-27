@@ -19,15 +19,16 @@ package webhooks
 import (
 	"context"
 	"encoding/json"
+	"net/http"
+
 	"github.com/dana-team/hostedcluster-requester/internal/constants"
 	"github.com/go-logr/logr"
-	hyp "github.com/openshift/hypershift/api/v1alpha1"
-	"net/http"
+	hyp "github.com/openshift/hypershift/api/v1beta1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/webhook/admission"
 )
 
-//+kubebuilder:webhook:path=/mutate-hostedcluster,mutating=true,failurePolicy=fail,sideEffects=None,groups=hypershift.openshift.io,resources=hostedclusters,verbs=create;update,versions=v1alpha1,name=mhostedcluster.kb.io,admissionReviewVersions=v1
+//+kubebuilder:webhook:path=/mutate-v1beta1-hostedcluster,mutating=true,failurePolicy=fail,sideEffects=None,groups=hypershift.openshift.io,resources=hostedclusters,verbs=create;update,versions=v1beta1,name=mhostedcluster.kb.io,admissionReviewVersions=v1
 
 // HostedClusterAnnotator adds an annotation to HostedCluster objects
 type HostedClusterAnnotator struct {
@@ -69,5 +70,16 @@ func (hook *HostedClusterAnnotator) handleInner(log logr.Logger, hc *hyp.HostedC
 		}
 		log.Info("HostedCluster is missing requester annotation; adding")
 		hc.Annotations[constants.RequesterAnnotation] = requester
+	}
+
+	// if spec.etcd.managed.storage.restoreSnapshotURL is nil then change it to an empty slice.
+	// This is needed because in v1beta1 this field does not
+	// have an omitempty tag and marshalling an empty []string slice gives nil
+	// instead of empty slice and this causes an error for HostedCluster.
+	// This is the only instance of the HostedCluster spec that is like this so
+	// we only need to handle this here
+	// TODO: Figure out an elegant way to get past it
+	if hc.Spec.Etcd.Managed.Storage.RestoreSnapshotURL == nil {
+		hc.Spec.Etcd.Managed.Storage.RestoreSnapshotURL = []string{}
 	}
 }

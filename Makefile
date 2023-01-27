@@ -166,6 +166,22 @@ deploy: manifests kustomize ## Deploy controller to the K8s cluster specified in
 undeploy: ## Undeploy controller from the K8s cluster specified in ~/.kube/config. Call with ignore-not-found=true to ignore resource not found errors during deletion.
 	$(KUSTOMIZE) build config/default | kubectl delete --ignore-not-found=$(ignore-not-found) -f -
 
+LOCAL_CERT_DIR ?= ./k8s-webhook-server/serving-certs
+
+dev: manifests kustomize
+	echo HOSTNAME=`hostname`.westeurope.cloudapp.azure.com > config/webhook-dev/hostname.env
+	$(KUSTOMIZE) build config/dev | oc apply -f -
+	mkdir -p $(LOCAL_CERT_DIR)
+	sleep 3
+	kubectl get secret webhook-server-cert -n hostedcluster-requester-system -o jsonpath="{.data.tls\.crt}" | base64 --decode > $(LOCAL_CERT_DIR)/tls.crt
+	kubectl get secret webhook-server-cert -n hostedcluster-requester-system -o jsonpath="{.data.ca\.crt}" | base64 --decode > $(LOCAL_CERT_DIR)/ca.crt
+	kubectl get secret webhook-server-cert -n hostedcluster-requester-system -o jsonpath="{.data.tls\.key}" | base64 --decode > $(LOCAL_CERT_DIR)/tls.key
+
+undev: manifests kustomize
+#	$(KUSTOMIZE) build config/dev | oc delete -f -
+#	rm -r $(LOCAL_CERT_DIR)
+	rm config/webhook-dev/hostname.env
+
 ##@ Build Dependencies
 
 ## Location to install dependencies to
